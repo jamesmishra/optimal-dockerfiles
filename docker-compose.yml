@@ -1,0 +1,62 @@
+version: "3.9"
+
+
+services:
+  hello:
+    image: jamesmishra/hello
+    restart: always
+    build:
+      context: ./hello
+      # We need to use the host's computer network when BUILDING the
+      # containers (but not necessarily when running them).
+      # This is the only way the container will be able to connect
+      # to the 127.0.0.1 addresses for the Apt and PyPI caches.
+      network: host
+      args:
+        # Defining this variable assumes that the `apt-cacher-ng` container
+        # is running when the `hello` container is being built. If you want
+        # to build `hello` without the cache, remove this line.
+        LOCAL_APT_CACHE_URL: "http://127.0.0.1:3142"
+        # Defining this variable assumes that the `devpi-server` container
+        # is running when the `hello` container is being built. If you want
+        # to build `hello` without the cache, remove this line.
+        LOCAL_PYPI_CACHE_URL: "http://127.0.0.1:3141"
+        CONTAINER_UID: 10001
+        CONTAINER_GID: 10002
+    ports:
+      - "8080:8080"
+
+  # This is a container that uwe used to cache Apt packages.
+  # We have to run THIS container when BUILDING containerse that want to use
+  # the cache.
+  apt-cacher-ng:
+    image: jamesmishra/apt-cacher-ng
+    restart: always
+    build:
+      context: ./apt-cacher-ng
+    ports:
+      # Only accept connections to apt-cacher-ng from localhost.
+      # We do not want to serve cache traffic from other computers,
+      # but if we do, then we should remove the "127.0.0.1:" bit.
+      - "127.0.0.1:3142:3142"
+
+  # This is a container that we use to cache Python packages from PyPI.
+  # We have to run THIS container when BUILDING containerse that want to use
+  # the cache.
+  devpi-server:
+    image: jamesmishra/devpi-server
+    restart: always
+    build:
+      context: ./devpi-server
+    ports:
+      # Only accept connections to apt-cacher-ng from localhost.
+      # We do not want to serve cache traffic from other computers,
+      # but if we do, then we should remove the "127.0.0.1:" bit.
+      - "127.0.0.1:3141:3141"
+
+
+# Thes are the Docker volumes where apt-cacher-ng and devpi-server
+# stores their cached packages.
+volumes:
+  apt-cacher-ng_volume:
+  devpi-server_volume:

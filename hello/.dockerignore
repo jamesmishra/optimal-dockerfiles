@@ -1,0 +1,16 @@
+# The .dockerignore file excludes files from the Docker image build context
+# in a way that is similar to how Git excludes files with .gitignore.
+#
+# There are some important differences:
+#    * .gitignores can be placed anywhere in a directory tree. The
+#       .dockerignore can only be placed at the root of a repository.
+#    * .gitignore file patterns are automatically recursive.
+#       .dockerignore file patterns are not, but we can make them
+#       recursive by prepending the expressison with "**/".
+
+# Here we recursively exclude .git directories from the
+# Docker image build context.
+**/.git
+
+# Here we ignore the .dpockerignore file itself from the build context.
+.dockerignore
