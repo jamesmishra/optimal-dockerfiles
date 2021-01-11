@@ -8,6 +8,6 @@ We set up a local Apt caching server at [`apt-cacher-ng/Dockerfile`](https://git
 
 These three Docker images are configured and built via the [`docker-compose.yml`](https://github.com/jamesmishra/optimal-dockerfiles/blob/main/docker-compose.yml) at the root of this repository.
 
-The [`Makefile`](blob/main/Makefile) at the root of this repository can be used to build the containers [`make build`]--starting the caching proxies before building `hello`. The `make up` command starts the `hello` HTTP server on the local machine which would serve traffic at `http://localhost:8080/hello`.
+The [`Makefile`](https://github.com/jamesmishra/optimal-dockerfiles/blob/main/Makefile) at the root of this repository can be used to build the containers [`make build`]--starting the caching proxies before building `hello`. The `make up` command starts the `hello` HTTP server on the local machine which would serve traffic at `http://localhost:8080/hello`.
 
 All of the files are heavily commented, and more explanation of how these Docker features work is available [at this blog post I wrote](https://jamesmishra.com/2021/01/09/docker-tips/).
