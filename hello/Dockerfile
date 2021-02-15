@@ -59,13 +59,13 @@ RUN if [ ! -z ${LOCAL_APT_CACHE_URL} ]; \
     # This first `find` command replaces HTTP Apt repository URL to run
     # through our apt-cacher-ng proxy.
     find /etc/apt/sources.list /etc/apt/sources.list.d/ \
-    -type f -exec sed -Ei 's!http://!'${LOCAL_APT_CACHE_URL}'/!g' {} \; \
+    -type f -exec sed -Ei '\#'${LOCAL_APT_CACHE_URL}'#!s!http://!'${LOCAL_APT_CACHE_URL}'/!g' {} \; \
     # This second `find` commands replaces HTTPS Apt repository URLs
     # to run through out apt-cacher-ng proxy. If we don't do this,
     # then apt-cacher-ng will not be able to cache packages from
     # HTTPS repositories.
     && find /etc/apt/sources.list /etc/apt/sources.list.d/ \
-    -type f -exec sed -Ei 's!https://!'${LOCAL_APT_CACHE_URL}'/HTTPS///!g' {} \; ;\
+    -type f -exec sed -Ei '\#'${LOCAL_APT_CACHE_URL}'#!s!https://!'${LOCAL_APT_CACHE_URL}'/HTTPS///!g' {} \; ;\
     fi
 
 # Insert a PyPI proxy in this container, but ohly if this build-time
@@ -127,6 +127,25 @@ CMD ["-listen-address=:8080"]
 # can serve traffic on ports tha have not been marked with the `EXPOSE`
 # command, but it is good documentation to use `EXPOSE`.
 EXPOSE 8080
+
+# Reverse our Apt caching proxy so that Docker images that inherit from this
+# one receive a normal configuration.
+RUN if [ ! -z ${LOCAL_APT_CACHE_URL} ]; \
+    then \
+    # Reverse the HTTPS URLs first.
+    find /etc/apt/sources.list /etc/apt/sources.list.d/ \
+    -type f -exec sed -Ei 's!'${NEOCRYM__LOCAL_APT_CACHE_URL}/HTTPS///'!https://!g' {} \; \
+    # and then the HTTP URLs.
+    && find /etc/apt/sources.list /etc/apt/sources.list.d/ \
+    -type f -exec sed -Ei 's!'${NEOCRYM__LOCAL_APT_CACHE_URL}/'!http://!g' {} \; ;\
+    fi
+
+# Reverse our pip caching proxy so that Docker images that inherit from this
+# one receive a normal configuration.
+RUN if [ ! -z ${LOCAL_PYPI_CACHE_URL} ]; \
+    then \
+    rm -f ${PYPI_CACHE_PROXY_CONFIG_FILE}; \
+    fi
 
 # Switch to our non-root user.
 USER anubis
